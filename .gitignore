@@ -1,1 +1,29 @@
+<<<<<<< HEAD
 GEMINI.md
+=======
+# Compiler output
+cache/
+out/
+broadcast/
+
+# Dependencies
+lib/
+
+# Environment & secrets
+.env
+.env.*
+
+# Node (frontend)
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project-specific
+GEMINI.md
+>>>>>>> 08af37f19a545017971771882dfcd6e97283c62f
