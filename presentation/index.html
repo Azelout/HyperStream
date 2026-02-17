@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HyperStream — Continuous Liquidity Streaming on Monad</title>
+  <meta name="description" content="HyperStream: Real-time payment streaming protocol on Monad." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --purple: #7D4FFE;
+      --lilac: #C49FFF;
+      --blush: #FFD0E6;
+      --pink: #FF9CB6;
+      --coral: #F08488;
+
+      --white: #FFFFFF;
+      --bg: #FAFAFE;
+      --surface: #FFFFFF;
+      --surface-alt: #F6F4FB;
+      --text: #1A1330;
+      --text-2: #4A3D6B;
+      --text-3: #8A80A4;
+      --border: #EDE8F5;
+      --border-hover: #D6CCF0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ═══════════ SLIDES ═══════════ */
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+      padding: 3rem 5rem;
+    }
+
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ═══════════ ANIMATIONS ═══════════ */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .4
+      }
+    }
+
+    @keyframes gradMove {
+
+      0%,
+      100% {
+        background-position: 0% 50%
+      }
+
+      50% {
+        background-position: 100% 50%
+      }
+    }
+
+    @keyframes softFloat {
+
+      0%,
+      100% {
+        transform: translate(0, 0);
+      }
+
+      50% {
+        transform: translate(0, -12px);
+      }
+    }
+
+    .anim {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .anim.v {
+      animation: fadeUp .65s cubic-bezier(.16, 1, .3, 1) forwards;
+    }
+
+    .anim.v.d1 {
+      animation-delay: .08s;
+    }
+
+    .anim.v.d2 {
+      animation-delay: .18s;
+    }
+
+    .anim.v.d3 {
+      animation-delay: .28s;
+    }
+
+    .anim.v.d4 {
+      animation-delay: .38s;
+    }
+
+    .anim.v.d5 {
+      animation-delay: .48s;
+    }
+
+    /* ═══════════ GRADIENT TEXT ═══════════ */
+    .grad {
+      background: linear-gradient(135deg, var(--purple) 0%, var(--lilac) 40%, var(--pink) 70%, var(--coral) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ═══════════ SOFT BG SHAPES ═══════════ */
+    .shape {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      opacity: 0.35;
+      animation: softFloat 10s ease-in-out infinite;
+    }
+
+    /* ═══════════ CARDS ═══════════ */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      transition: all .25s ease;
+    }
+
+    .card:hover {
+      border-color: var(--border-hover);
+      box-shadow: 0 8px 32px rgba(125, 79, 254, .06);
+      transform: translateY(-2px);
+    }
+
+    /* ═══════════ NAV ═══════════ */
+    .nav-bar {
+      position: fixed;
+      bottom: 28px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      z-index: 100;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      cursor: pointer;
+      transition: all .3s ease;
+      border: none;
+    }
+
+    .dot.active {
+      background: var(--purple);
+      width: 28px;
+      border-radius: 4px;
+    }
+
+    .dot:hover:not(.active) {
+      background: var(--lilac);
+    }
+
+    .slide-num {
+      position: fixed;
+      bottom: 28px;
+      left: 40px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .7rem;
+      color: var(--text-3);
+      z-index: 100;
+    }
+
+    .nav-hint {
+      position: fixed;
+      bottom: 28px;
+      right: 40px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .7rem;
+      color: var(--text-3);
+      z-index: 100;
+    }
+
+    #progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--purple), var(--lilac), var(--pink), var(--coral));
+      background-size: 300% 100%;
+      animation: gradMove 5s ease infinite;
+      transition: width .5s ease;
+      z-index: 100;
+    }
+
+    /* ═══════════ CHIP / BADGE ═══════════ */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: 100px;
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      font-size: .8rem;
+      color: var(--text-2);
+      font-weight: 500;
+    }
+
+    .chip-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--purple);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* ═══════════ TYPOGRAPHY ═══════════ */
+    .hero-title {
+      font-size: clamp(4rem, 10vw, 7.5rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: .95;
+    }
+
+    .slide-title {
+      font-size: clamp(2.2rem, 4.5vw, 3rem);
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      line-height: 1.15;
+      color: var(--text);
+    }
+
+    .label {
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--purple);
+    }
+
+    .subtitle {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      font-weight: 500;
+      color: var(--text-2);
+    }
+
+    .body-text {
+      font-size: 1rem;
+      color: var(--text-3);
+      line-height: 1.6;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .z {
+      position: relative;
+      z-index: 10;
+    }
+
+    /* ═══════════ STATS ═══════════ */
+    .stats-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+
+    .stat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .82rem;
+      font-weight: 500;
+      color: var(--text-3);
+    }
+
+    .stat svg {
+      color: var(--purple);
+    }
+
+    .stat-div {
+      width: 1px;
+      height: 14px;
+      background: var(--border);
+    }
+
+    /* ═══════════ GRID ═══════════ */
+    .g2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      width: 100%;
+    }
+
+    .g3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 18px;
+      width: 100%;
+    }
+
+    @media(max-width:768px) {
+
+      .g2,
+      .g3 {
+        grid-template-columns: 1fr
+      }
+
+      .slide {
+        padding: 1.5rem;
+      }
+    }
+
+    /* ═══════════ PROBLEM CARDS ═══════════ */
+    .ic-wrap {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .ic-wrap.coral {
+      background: rgba(240, 132, 136, .1);
+    }
+
+    .ic-wrap.purple {
+      background: rgba(125, 79, 254, .08);
+    }
+
+    .ic-wrap svg.ic-coral {
+      color: var(--coral);
+    }
+
+    .ic-wrap svg.ic-purple {
+      color: var(--purple);
+    }
+
+    .c-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .c-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .c-body {
+      color: var(--text-2);
+      font-size: .88rem;
+      line-height: 1.6;
+    }
+
+    .c-body strong {
+      color: var(--text);
+    }
+
+    .data-block {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .75rem;
+      background: var(--surface-alt);
+      border-radius: 10px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      margin: 12px 0;
+    }
+
+    .data-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 3px 0;
+    }
+
+    .data-label {
+      color: var(--text-3);
+    }
+
+    .data-val-coral {
+      color: var(--coral);
+      font-weight: 600;
+    }
+
+    .data-val-purple {
+      color: var(--purple);
+      font-weight: 600;
+    }
+
+    .data-val-green {
+      color: #34D399;
+      font-weight: 600;
+    }
+
+    .data-comment {
+      color: var(--text-3);
+      font-size: .72rem;
+      opacity: .7;
+    }
+
+    .data-line {
+      color: var(--coral);
+      font-size: .78rem;
+    }
+
+    .footnote {
+      font-size: .78rem;
+      color: var(--text-3);
+      margin-top: 12px;
+      line-height: 1.5;
+    }
+
+    /* ═══════════ SOL CARD SMALL ═══════════ */
+    .sc-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .sc-desc {
+      font-size: .82rem;
+      color: var(--text-3);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    /* ═══════════ COMPARISON ═══════════ */
+    .comp {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 36px;
+      padding: 16px 28px;
+      margin-top: 24px;
+    }
+
+    .comp-lbl {
+      font-size: .72rem;
+      color: var(--text-3);
+      margin-bottom: 2px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .comp-v1 {
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--coral);
+    }
+
+    .comp-v2 {
+      font-size: .95rem;
+      font-weight: 700;
+    }
+
+    .comp-arr {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .comp-ln {
+      width: 40px;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ═══════════ COUNTER (Slide 4) ═══════════ */
+    .formula-box {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(.88rem, 1.6vw, 1.2rem);
+      padding: 16px 24px;
+      display: inline-block;
+      color: var(--text-2);
+    }
+
+    .formula-box .fn {
+      color: var(--purple);
+    }
+
+    .formula-box .op {
+      color: var(--text-3);
+    }
+
+    .formula-box .kw {
+      color: var(--purple);
+      font-weight: 600;
+    }
+
+    .formula-box .lit {
+      color: var(--text);
+    }
+
+    .formula-box .var {
+      color: var(--pink);
+    }
+
+    .formula-box .par {
+      color: var(--text-3);
+    }
+
+    .ctr-wrap {
+      padding: 32px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    .live-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--purple);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .live-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .78rem;
+      color: var(--purple);
+      font-weight: 500;
+    }
+
+    .counter-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: clamp(2.5rem, 5.5vw, 3.5rem);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 8px;
+    }
+
+    .counter-unit {
+      font-size: 1rem;
+      color: var(--text-3);
+      font-weight: 500;
+    }
+
+    .counter-meta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .7rem;
+      color: var(--text-3);
+      margin-top: 18px;
+    }
+
+    .footer-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      font-size: .8rem;
+      color: var(--text-3);
+    }
+
+    .footer-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ═══════════ SLIDE 5 ═══════════ */
+    .live-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      border-radius: 100px;
+      background: rgba(125, 79, 254, .06);
+      border: 1px solid rgba(125, 79, 254, .12);
+      font-size: .78rem;
+      color: var(--purple);
+      font-weight: 500;
+    }
+
+    .live-chip svg {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .demo-title {
+      font-size: clamp(4rem, 10vw, 7.5rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: .95;
+    }
+
+    .demo-sub {
+      font-size: 1.15rem;
+      color: var(--text-3);
+    }
+
+    .demo-sub strong {
+      color: var(--text);
+    }
+
+    .demo-desc {
+      font-size: 1rem;
+      color: var(--text-3);
+      max-width: 400px;
+      margin: 0 auto;
+      line-height: 1.55;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 36px;
+      border-radius: 12px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--white);
+      cursor: pointer;
+      border: none;
+      background: var(--purple);
+      transition: all .25s ease;
+      box-shadow: 0 4px 20px rgba(125, 79, 254, .25);
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(125, 79, 254, .3);
+      background: #6B3FE8;
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .addr {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .68rem;
+      color: var(--text-3);
+      opacity: .5;
+      margin-top: 40px;
+    }
+
+    /* spacing helpers */
+    .mb1 {
+      margin-bottom: 4px
+    }
+
+    .mb2 {
+      margin-bottom: 8px
+    }
+
+    .mb3 {
+      margin-bottom: 12px
+    }
+
+    .mb4 {
+      margin-bottom: 16px
+    }
+
+    .mb5 {
+      margin-bottom: 20px
+    }
+
+    .mb6 {
+      margin-bottom: 24px
+    }
+
+    .mb8 {
+      margin-bottom: 32px
+    }
+
+    .mb10 {
+      margin-bottom: 40px
+    }
+
+    .mb12 {
+      margin-bottom: 48px
+    }
+
+    .mb14 {
+      margin-bottom: 56px
+    }
+
+    .p5 {
+      padding: 20px
+    }
+
+    .p6 {
+      padding: 24px
+    }
+
+    .p7 {
+      padding: 28px
+    }
+
+    .mw5 {
+      max-width: 960px;
+      width: 100%
+    }
+
+    .mw6 {
+      max-width: 1060px;
+      width: 100%
+    }
+
+    .mw4 {
+      max-width: 720px;
+      width: 100%
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="progress-bar" style="width:20%"></div>
+
+  <!-- ══════════ SLIDE 1 ══════════ -->
+  <section class="slide active" data-slide="0">
+    <div class="shape" style="width:420px;height:420px;background:var(--lilac);top:-18%;right:-6%;opacity:.2;"></div>
+    <div class="shape"
+      style="width:300px;height:300px;background:var(--blush);bottom:-10%;left:-2%;opacity:.25;animation-delay:3s;">
+    </div>
+    <div class="shape"
+      style="width:200px;height:200px;background:var(--pink);top:30%;left:20%;opacity:.12;animation-delay:6s;"></div>
+
+    <div class="z center mw5">
+      <div class="anim d1 mb6">
+        <span class="chip"><span class="chip-dot"></span> Deployed on Monad Testnet</span>
+      </div>
+
+      <h1 class="anim d2 hero-title mb8">
+        <span class="grad">Hyper</span><span>Stream</span>
+      </h1>
+
+      <p class="anim d3 subtitle mb10">Continuous Liquidity Streaming on Monad</p>
+
+      <p class="anim d4 body-text mb12">
+        A real-time, per-second payment protocol optimized for Monad's parallel execution engine.
+        Pay-as-you-earn. No batching. No delays.
+      </p>
+
+      <div class="anim d5 stats-row">
+        <span class="stat"><i data-lucide="zap" style="width:14px;height:14px;"></i> 1s Blocks</span>
+        <span class="stat-div"></span>
+        <span class="stat"><i data-lucide="cpu" style="width:14px;height:14px;"></i> OCC Optimized</span>
+        <span class="stat-div"></span>
+        <span class="stat"><i data-lucide="lock" style="width:14px;height:14px;"></i> Stateless</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ SLIDE 2 ══════════ -->
+  <section class="slide" data-slide="1">
+    <div class="shape" style="width:380px;height:380px;background:var(--blush);top:-10%;left:5%;opacity:.18;"></div>
+
+    <div class="z mw6">
+      <div class="anim d1 mb4"><span class="label" style="color:var(--coral);">The Problem</span></div>
+
+      <h2 class="anim d1 slide-title mb14">The Legacy <span style="color:var(--coral);">EVM</span> Trap</h2>
+
+      <div class="g2">
+        <div class="anim d2 card p7">
+          <div class="c-head">
+            <div class="ic-wrap coral"><i data-lucide="clock" style="width:20px;height:20px;" class="ic-coral"></i>
+            </div>
+            <div class="c-title">Batch Payments = Archaic</div>
+          </div>
+          <div class="c-body">
+            <p>Traditional EVMs force you into <strong>discrete, batch-processed</strong> payment cycles.</p>
+            <div class="data-block">
+              <div class="data-row"><span class="data-label">Block Time</span><span class="data-val-coral">12
+                  seconds</span></div>
+              <div class="data-row"><span class="data-label">Gas per Tx</span><span class="data-val-coral">~$2.50
+                  avg</span></div>
+              <div class="data-row"><span class="data-label">Micro-payments</span><span
+                  class="data-val-coral">Unviable</span></div>
+            </div>
+            <p class="footnote">Paying 1,000 employees per-second?<br />
+              <span class="mono" style="color:var(--coral);">$2,500/block × 7,200 blocks/day = $18M/day</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="anim d3 card p7">
+          <div class="c-head">
+            <div class="ic-wrap coral"><i data-lucide="database" style="width:20px;height:20px;" class="ic-coral"></i>
+            </div>
+            <div class="c-title">State Contention</div>
+          </div>
+          <div class="c-body">
+            <p>Micro-transactions create <strong>massive bottlenecks</strong> on the global state trie.</p>
+            <div class="data-block">
+              <div class="data-comment">// Sequential execution</div>
+              <div class="data-line">Tx₁ → lock(state) → write → unlock</div>
+              <div class="data-line">Tx₂ → lock(state) → write → unlock</div>
+              <div class="data-line">Tx₃ → lock(state) → write → unlock</div>
+              <div class="data-comment" style="margin-top:4px;">// Every tx waits for the previous</div>
+            </div>
+            <p class="footnote">Shared state = <span style="color:var(--coral);">sequential processing</span>.
+              10,000 streams execute <strong>one by one</strong>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ SLIDE 3 ══════════ -->
+  <section class="slide" data-slide="2">
+    <div class="shape" style="width:400px;height:400px;background:var(--lilac);bottom:-15%;right:-2%;opacity:.15;">
+    </div>
+    <div class="shape"
+      style="width:260px;height:260px;background:var(--blush);top:2%;left:6%;opacity:.12;animation-delay:2s;"></div>
+
+    <div class="z mw6">
+      <div class="anim d1 mb4"><span class="label">The Solution</span></div>
+
+      <h2 class="anim d1 slide-title mb14">Built for <span class="grad">Monad</span></h2>
+
+      <div class="g3">
+        <div class="anim d2 card p6">
+          <div class="ic-wrap purple mb5" style="margin-bottom:14px;"><i data-lucide="zap"
+              style="width:20px;height:20px;" class="ic-purple"></i></div>
+          <div class="sc-title">1s Block Time</div>
+          <p class="sc-desc">True on-chain real-time. Not a frontend illusion.</p>
+          <div class="data-block" style="margin:0;">
+            <span class="data-label">Finality:</span>
+            <span class="data-val-purple"> ~1 second</span><br />
+            <span class="data-label">vs Ethereum:</span>
+            <span style="color:var(--text-3);"> ~12 seconds</span>
+          </div>
+        </div>
+
+        <div class="anim d3 card p6">
+          <div class="ic-wrap purple mb5" style="margin-bottom:14px;"><i data-lucide="cpu"
+              style="width:20px;height:20px;" class="ic-purple"></i></div>
+          <div class="sc-title">Optimistic Concurrency</div>
+          <p class="sc-desc">Isolated storage slots. 10,000 streams in parallel.</p>
+          <div class="data-block" style="margin:0;">
+            <span class="data-comment">// No state locks</span><br />
+            <span class="data-val-purple">mapping</span><span style="color:var(--text-3);">(uint256 => Stream)</span>
+          </div>
+        </div>
+
+        <div class="anim d4 card p6">
+          <div class="ic-wrap purple mb5" style="margin-bottom:14px;"><i data-lucide="lock"
+              style="width:20px;height:20px;" class="ic-purple"></i></div>
+          <div class="sc-title">Stateless Architecture</div>
+          <p class="sc-desc">Pull-based model. Zero per-block updates.</p>
+          <div class="data-block" style="margin:0;">
+            <span class="data-label">State updates:</span>
+            <span class="data-val-purple"> 0 per block</span><br />
+            <span class="data-label">Gas saved:</span>
+            <span class="data-val-green"> ~99%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="anim d5 card comp">
+        <div class="center">
+          <div class="comp-lbl">Ethereum</div>
+          <div class="comp-v1">Sequential</div>
+        </div>
+        <div class="comp-arr">
+          <div class="comp-ln"></div>
+          <i data-lucide="arrow-right" style="width:16px;height:16px;color:var(--purple);"></i>
+          <div class="comp-ln"></div>
+        </div>
+        <div class="center">
+          <div class="comp-lbl">Monad</div>
+          <div class="comp-v2 grad">Parallel</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ SLIDE 4 ══════════ -->
+  <section class="slide" data-slide="3">
+    <div class="shape" style="width:340px;height:340px;background:var(--lilac);top:6%;right:2%;opacity:.1;"></div>
+    <div class="shape"
+      style="width:230px;height:230px;background:var(--blush);bottom:10%;left:6%;opacity:.12;animation-delay:4s;"></div>
+
+    <div class="z center mw5">
+      <div class="anim d1 mb4"><span class="label">The Math</span></div>
+
+      <h2 class="anim d1 slide-title mb10">The Math Behind the <span class="grad">Magic</span></h2>
+
+      <div class="anim d2 card formula-box mb10">
+        <span class="fn">Balance</span><span class="par">(t)</span>
+        <span class="op"> = </span>
+        <span class="kw">min</span><span class="par">(</span><span class="lit">deposit</span><span class="op">,</span>
+        <span class="par">(</span><span class="fn">t</span>
+        <span class="op"> − </span>
+        <span class="par">startTime</span><span class="par">)</span>
+        <span class="op"> × </span>
+        <span class="var">ratePerSecond</span><span class="par">)</span>
+      </div>
+
+      <div class="anim d3 mb10">
+        <div class="card ctr-wrap center">
+          <div class="live-row"><span class="live-dot"></span><span class="live-label">Streaming Live</span></div>
+          <div class="counter-val"><span id="counter-value" class="grad">0.000000</span></div>
+          <div class="counter-unit">USDC</div>
+          <div class="counter-meta">
+            <span>Rate: <span style="color:var(--purple);">0.001389 USDC/s</span></span>
+            <span class="stat-div" style="height:10px;"></span>
+            <span>Deposit: <span style="color:var(--text-2);">5,000.00 USDC</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="anim d4 footer-row">
+        <span class="footer-item"><i data-lucide="shield-check" style="width:14px;height:14px;color:var(--purple);"></i>
+          No overflow</span>
+        <span class="footer-item"><i data-lucide="lock" style="width:14px;height:14px;color:var(--lilac);"></i>
+          Precision safe</span>
+        <span class="footer-item"><i data-lucide="trending-up" style="width:14px;height:14px;color:var(--pink);"></i>
+          Capped at deposit</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ SLIDE 5 ══════════ -->
+  <section class="slide" data-slide="4">
+    <div class="shape"
+      style="width:500px;height:500px;background:var(--lilac);top:50%;left:50%;transform:translate(-50%,-50%);opacity:.12;">
+    </div>
+    <div class="shape"
+      style="width:300px;height:300px;background:var(--blush);top:15%;right:10%;animation-delay:2s;opacity:.15;"></div>
+
+    <div class="z center mw4">
+      <div class="anim d1 mb8">
+        <span class="live-chip"><i data-lucide="radio" style="width:14px;height:14px;"></i> Going Live</span>
+      </div>
+
+      <h2 class="anim d2 demo-title mb8"><span class="grad">LIVE DEMO</span></h2>
+
+      <p class="anim d3 demo-sub mb3">Use Case: <strong>Web3 Payroll</strong> via HyperStream</p>
+      <p class="anim d3 demo-desc mb12">Watch salary streaming in real-time on Monad testnet. Every second counts.</p>
+
+      <div class="anim d4">
+        <button id="launch-btn" class="btn">
+          <i data-lucide="rocket" style="width:18px;height:18px;"></i>
+          Launch App
+        </button>
+      </div>
+
+      <div class="anim d5 addr">
+        Contract: 0xd210d75702836ea5c13457d064045f39d253A235
+      </div>
+    </div>
+  </section>
+
+  <!-- NAV -->
+  <div class="slide-num"><span id="slide-number">01</span> / 05</div>
+  <div class="nav-bar">
+    <button class="dot active" data-nav="0"></button>
+    <button class="dot" data-nav="1"></button>
+    <button class="dot" data-nav="2"></button>
+    <button class="dot" data-nav="3"></button>
+    <button class="dot" data-nav="4"></button>
+  </div>
+  <div class="nav-hint">←→ navigate</div>
+
+  <!-- JS -->
+  <script>
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    const slides = document.querySelectorAll('.slide'), dots = document.querySelectorAll('.dot'),
+      bar = document.getElementById('progress-bar'), num = document.getElementById('slide-number');
+    let idx = 0, lock = false;
+
+    function anim(s) { s.querySelectorAll('.anim').forEach(e => { e.classList.remove('v'); void e.offsetHeight; e.classList.add('v'); }) }
+
+    function go(i) {
+      if (i < 0 || i >= slides.length || i === idx || lock) return;
+      lock = true;
+      slides[idx].classList.remove('active'); dots[idx].classList.remove('active');
+      slides[idx].querySelectorAll('.anim').forEach(e => e.classList.remove('v'));
+      idx = i;
+      slides[idx].classList.add('active'); dots[idx].classList.add('active');
+      requestAnimationFrame(() => anim(slides[idx]));
+      bar.style.width = ((idx + 1) / slides.length * 100) + '%';
+      num.textContent = String(idx + 1).padStart(2, '0');
+      idx === 3 ? startC() : stopC();
+      setTimeout(() => { lock = false; }, 550);
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(idx + 1); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); go(idx - 1); }
+    });
+    dots.forEach(d => d.addEventListener('click', e => { e.stopPropagation(); go(+d.dataset.nav); }));
+    document.addEventListener('click', e => {
+      if (e.target.closest('.dot') || e.target.closest('#launch-btn')) return;
+      e.clientX > innerWidth / 2 ? go(idx + 1) : go(idx - 1);
+    });
+
+    let ci = null, cv = 0; const R = 0.001389 / 1000, el = document.getElementById('counter-value');
+    function startC() { if (ci) return; ci = setInterval(() => { cv += R * 50; if (cv > 5000) cv = 5000; el.textContent = cv.toLocaleString('en-US', { minimumFractionDigits: 6, maximumFractionDigits: 6 }); }, 50); }
+    function stopC() { if (ci) { clearInterval(ci); ci = null; } }
+
+    let tx = 0;
+    document.addEventListener('touchstart', e => { tx = e.changedTouches[0].screenX; });
+    document.addEventListener('touchend', e => { const d = tx - e.changedTouches[0].screenX; if (Math.abs(d) > 50) d > 0 ? go(idx + 1) : go(idx - 1); });
+
+    requestAnimationFrame(() => anim(slides[0]));
+  </script>
+</body>
+
+</html>
