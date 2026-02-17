@@ -1,8 +1,7 @@
 import { useApp } from '../context/AppContext';
-import { GlassCard } from '../components/GlassCard';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { Sparkles, ArrowRight, Zap } from 'lucide-react';
 
 export const Login = () => {
   const { connectWallet, isWalletConnected } = useApp();
@@ -15,27 +14,42 @@ export const Login = () => {
   }, [isWalletConnected, navigate]);
 
   return (
-    <div className="relative z-10 flex items-center justify-center min-h-screen">
-      <GlassCard className="text-center max-w-md w-full mx-4">
-        <h1 className="text-5xl font-black mb-2 tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-neon-cyan via-white to-neon-magenta animate-pulse-fast">
-          HYPERSTREAM
-        </h1>
-        <p className="text-gray-400 mb-8 font-light tracking-wide">
-          HYPERSPEED PAYMENT PROTOCOL
-        </p>
+    <div className="min-h-screen obsidian-bg flex items-center justify-center p-6 antialiased">
+      <div className="premium-card max-w-[480px] w-full p-12 text-center">
+        <div className="flex flex-col items-center">
+          <div className="mb-12 relative">
+            <div className="absolute inset-0 bg-emerald-500/10 blur-[60px] rounded-full" />
+            <div className="w-24 h-24 rounded-2xl bg-[#0a0a0c] border border-white/5 flex items-center justify-center relative z-10">
+              <Zap className="w-12 h-12 text-[#10b981] jade-glow fill-[#10b981]/10" />
+            </div>
+          </div>
 
-        <button
-          onClick={connectWallet}
-          className="group relative w-full py-4 px-6 bg-glass-button text-white font-bold rounded-xl overflow-hidden transition-all duration-300 hover:shadow-[0_0_40px_rgba(3,179,195,0.4)] border border-white/10 hover:border-neon-cyan"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-          <span className="relative flex items-center justify-center gap-2">
-            <Sparkles className="w-5 h-5 text-neon-cyan" />
-            CONNECT WALLET
-            <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
-          </span>
-        </button>
-      </GlassCard>
+          <div className="mb-10">
+            <h1 className="text-5xl font-extrabold mb-3 tracking-tighter text-premium-gradient">
+              HyperStream
+            </h1>
+            <p className="text-gray-400 font-medium text-base leading-relaxed max-w-[280px] mx-auto">
+              High-performance continuous settlement protocol.
+            </p>
+          </div>
+
+          <div className="w-full space-y-6">
+            <button
+              onClick={connectWallet}
+              className="btn-jade w-full group"
+            >
+              <Sparkles className="w-4 h-4 transition-transform group-hover:scale-110" />
+              <span>Connect Wallet</span>
+              <ArrowRight className="w-4 h-4 ml-2 opacity-50 transition-transform group-hover:translate-x-1" />
+            </button>
+            <div className="flex items-center justify-center gap-6 opacity-30">
+              <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500">Built for Monad</div>
+              <div className="w-1 h-1 rounded-full bg-gray-600" />
+              <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500">v1.0.4</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

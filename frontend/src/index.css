@@ -4,33 +4,98 @@
 
 :root {
   background-color: #050505;
-  color: #ffffff;
+  color: #eeeeee;
 }
 
 body {
   margin: 0;
   padding: 0;
-  overflow: hidden; /* Prevent scrolling due to 3D background */
-  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  letter-spacing: -0.011em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #050505;
 }
 
-/* Glassmorphism Utilities */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+/* Precise Professional Background */
+.obsidian-bg {
+  background-color: #050505;
+  background-image: 
+    radial-gradient(circle at 50% -20%, rgba(16, 185, 129, 0.04), transparent 70%),
+    radial-gradient(circle at 10% 100%, rgba(99, 102, 241, 0.02), transparent 50%);
 }
 
-.glass-button {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s ease;
+/* Refined Bento Card - More Precise Geometry */
+.premium-card {
+  @apply relative overflow-hidden transition-all duration-300 rounded-2xl;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
-.glass-button:hover {
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 15px rgba(3, 179, 195, 0.3);
-  border-color: #03b3c3;
+.premium-card::after {
+  content: '';
+  @apply absolute top-0 left-0 right-0 h-[1px];
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+}
+
+.premium-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+}
+
+/* Professional Buttons */
+.btn-jade {
+  @apply relative flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-sm transition-all duration-200 overflow-hidden;
+  background: #10b981;
+  color: #050505;
+}
+
+.btn-jade:hover {
+  background: #34d399;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.2);
+}
+
+.btn-jade:active {
+  transform: scale(0.99);
+}
+
+.btn-obsidian {
+  @apply flex items-center justify-center gap-2 px-8 py-4 rounded-xl font-bold text-sm transition-all duration-200 border border-white/10 text-white hover:bg-white/5;
+}
+
+/* Advanced Typography */
+.text-premium-gradient {
+  background: linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.8) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.jade-glow {
+  filter: drop-shadow(0 0 12px rgba(16, 185, 129, 0.3));
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.3);
+}
+
+h1, h2, h3 {
+  letter-spacing: -0.025em;
+  font-weight: 800;
 }

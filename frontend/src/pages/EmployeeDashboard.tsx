@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { GlassCard } from '../components/GlassCard';
+import { Roadmap } from '../components/Roadmap';
 import { useApp } from '../context/AppContext';
-import { CheckCircle2, Zap } from 'lucide-react';
+import { ShieldCheck, Zap, Clock, Activity, Wallet } from 'lucide-react';
 
 export const EmployeeDashboard = () => {
     const { balance, updateBalance } = useApp();
@@ -17,62 +17,113 @@ export const EmployeeDashboard = () => {
         return () => clearInterval(interval);
     }, [streaming, updateBalance]);
 
-    const handleDeliver = () => {
-        alert("Deliverable Announced! Employer notified.");
-    };
-
     return (
-        <div className="relative z-10 p-8 pt-24 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Payment Stream Visualization */}
-            <GlassCard className="h-full min-h-[400px] flex flex-col justify-between relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-neon-cyan to-transparent animate-pulse-fast" />
-                
+        <div className="min-h-screen obsidian-bg p-8 pt-12 max-w-[1600px] mx-auto antialiased">
+            {/* Header Section */}
+            <div className="flex justify-between items-end mb-16">
                 <div>
-                    <h2 className="text-2xl font-bold flex items-center gap-2 mb-1">
-                        <Zap className="text-neon-cyan fill-neon-cyan" /> LIVE STREAM
-                    </h2>
-                    <p className="text-gray-400 text-sm">Incoming Payment Flow</p>
+                    <h1 className="text-5xl font-extrabold text-premium-gradient tracking-tighter flex items-center gap-4">
+                        <Zap className="text-[#10b981] w-10 h-10 jade-glow" /> Terminal
+                    </h1>
+                    <p className="text-gray-500 mt-2 font-medium">Real-time liquidation stream and protocol mission hub</p>
                 </div>
-
-                <div className="text-center py-12">
-                   <div className="text-6xl font-mono font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-neon-cyan">
-                        {balance.toFixed(6)}
-                   </div>
-                   <div className="text-sm text-neon-cyan/80 mt-2 font-mono">ETH SENT</div>
-                </div>
-
-                <div className="w-full bg-white/5 rounded-full h-2 mt-4 overflow-hidden">
-                    <div className="bg-neon-cyan h-full w-full animate-pulse opacity-50" />
-                </div>
-            </GlassCard>
-
-            {/* Work Progress Control */}
-            <GlassCard className="h-full min-h-[400px] flex flex-col justify-center">
-                 <h2 className="text-2xl font-bold mb-6">Work Progress</h2>
-                 
-                 <div className="mb-8">
-                    <div className="flex justify-between mb-2">
-                        <span className="text-gray-300">Completion</span>
-                        <span className="text-neon-magenta font-mono">{progress}%</span>
+                <div className="flex gap-4">
+                    <div className="btn-obsidian py-2.5 px-5">
+                        <Clock className="w-4 h-4 text-[#10b981]" />
+                        <span className="text-gray-300">4h 12m Active Session</span>
                     </div>
-                    <input 
-                        type="range" 
-                        min="0" 
-                        max="100" 
-                        value={progress} 
-                        onChange={(e) => setProgress(Number(e.target.value))}
-                        className="w-full h-4 bg-black/50 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-neon-magenta hover:[&::-webkit-slider-thumb]:shadow-[0_0_15px_#d856bf]"
-                    />
-                 </div>
+                </div>
+            </div>
 
-                 <button
-                    onClick={handleDeliver}
-                    className="w-full py-4 bg-neon-magenta/10 border border-neon-magenta/50 text-neon-magenta font-bold rounded-xl hover:bg-neon-magenta hover:text-white transition-all duration-300 flex items-center justify-center gap-2"
-                 >
-                    <CheckCircle2 className="w-5 h-5" />
-                    ANNOUNCE DELIVERABLE
-                 </button>
-            </GlassCard>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                {/* Main Visualization Column */}
+                <div className="lg:col-span-3 space-y-8">
+                    {/* High-Impact Balance Display */}
+                    <div className="premium-card p-16 flex flex-col items-center justify-center min-h-[400px] relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-emerald-500/[0.03] blur-[120px] rounded-full" />
+                        
+                        <div className="relative z-10 text-center">
+                            <h2 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.4em] mb-6">Live Protocol Balance</h2>
+                            <div className="flex items-baseline justify-center gap-4 mb-8">
+                                <span className="text-9xl font-extrabold text-premium-gradient tracking-tighter">
+                                    {balance.toFixed(4)}
+                                </span>
+                                <span className="text-3xl font-bold text-gray-600 tracking-normal">ETH</span>
+                            </div>
+                            
+                            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-emerald-500/5 border border-emerald-500/10">
+                                <Activity className="w-4 h-4 text-[#10b981]" />
+                                <span className="text-xs font-bold text-[#10b981] uppercase tracking-widest">Streaming Active</span>
+                            </div>
+                        </div>
+
+                        {/* Decoration */}
+                        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#10b981]/20 to-transparent" />
+                    </div>
+
+                    {/* Progress Bento */}
+                    <div className="premium-card p-12">
+                        <div className="flex flex-col md:flex-row items-center justify-between gap-12">
+                            <div className="space-y-4">
+                                <h2 className="text-xl font-bold text-premium-gradient">Mission Velocity</h2>
+                                <p className="text-sm text-gray-500 max-w-sm">Advance through cryptographic milestones to increase your stream multiplier.</p>
+                            </div>
+                            
+                            <div className="flex-1 w-full max-w-xl">
+                                <div className="flex justify-between items-end mb-4">
+                                    <span className="text-3xl font-extrabold text-premium-gradient tracking-tighter">{progress}%</span>
+                                    <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Node Capacity</span>
+                                </div>
+                                <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                                    <div 
+                                        className="h-full bg-gradient-to-r from-[#10b981] to-[#34d399] transition-all duration-700 ease-out"
+                                        style={{ width: `${progress}%` }}
+                                    />
+                                </div>
+                                <input 
+                                    type="range" 
+                                    min="0" 
+                                    max="100" 
+                                    value={progress} 
+                                    onChange={(e) => setProgress(Number(e.target.value))}
+                                    className="w-full h-8 opacity-0 cursor-pointer absolute -translate-y-6"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Sidebar Monitoring */}
+                <div className="space-y-8">
+                    <div className="premium-card p-10 h-full flex flex-col">
+                        <div className="p-10 border-b border-white/5">
+                            <h2 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mb-6">Mission Log</h2>
+                            <Roadmap mode="check" />
+                        </div>
+                        
+                        <div className="p-10 mt-auto">
+                            <div className="premium-card p-6 bg-white/[0.02] space-y-4 mb-8">
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="text-gray-500 font-medium">Gas Efficiency</span>
+                                    <span className="text-emerald-500 font-bold uppercase tracking-widest">Optimal</span>
+                                </div>
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="text-gray-500 font-medium">L2 Finality</span>
+                                    <span className="text-gray-400 font-bold uppercase tracking-widest">12s</span>
+                                </div>
+                            </div>
+
+                            <button className="btn-jade w-full group shadow-md">
+                                <ShieldCheck className="w-5 h-5" />
+                                <span>Commit Mission</span>
+                            </button>
+                            <div className="flex items-center justify-center gap-2 mt-4 text-[10px] text-gray-600 font-bold uppercase tracking-widest opacity-60">
+                                <Wallet className="w-3 h-3" /> Secure Signature Required
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };
