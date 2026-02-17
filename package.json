@@ -1,28 +1,9 @@
 {
-  "name": "hyperstream",
-  "version": "1.0.0",
-  "description": "",
-  "main": "server.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Azelout/HyperStream.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/Azelout/HyperStream/issues"
-  },
-  "homepage": "https://github.com/Azelout/HyperStream#readme",
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "ethers": "^6.16.0",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "sql.js": "^1.14.0"
   }
 }
