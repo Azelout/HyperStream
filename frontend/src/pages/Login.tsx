@@ -1,10 +1,10 @@
 import { useApp } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { Sparkles, ArrowRight, Zap } from 'lucide-react';
+import { Sparkles, ArrowRight, Zap, Loader2 } from 'lucide-react';
 
 export const Login = () => {
-  const { connectWallet, isWalletConnected } = useApp();
+  const { connectWallet, isWalletConnected, isLoading } = useApp();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,11 +36,16 @@ export const Login = () => {
           <div className="w-full space-y-6">
             <button
               onClick={connectWallet}
-              className="btn-jade w-full group"
+              disabled={isLoading}
+              className="btn-jade w-full group disabled:opacity-60 disabled:cursor-wait"
             >
-              <Sparkles className="w-4 h-4 transition-transform group-hover:scale-110" />
-              <span>Connect Wallet</span>
-              <ArrowRight className="w-4 h-4 ml-2 opacity-50 transition-transform group-hover:translate-x-1" />
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Sparkles className="w-4 h-4 transition-transform group-hover:scale-110" />
+              )}
+              <span>{isLoading ? 'Connecting...' : 'Connect Wallet'}</span>
+              {!isLoading && <ArrowRight className="w-4 h-4 ml-2 opacity-50 transition-transform group-hover:translate-x-1" />}
             </button>
             <div className="flex items-center justify-center gap-6 opacity-30">
               <div className="text-[10px] font-bold uppercase tracking-[0.3em] text-gray-500">Built for Monad</div>

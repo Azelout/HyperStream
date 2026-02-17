@@ -1,21 +1,95 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Roadmap } from '../components/Roadmap';
 import { useApp } from '../context/AppContext';
-import { ShieldCheck, Zap, Clock, Activity, Wallet } from 'lucide-react';
+import { ShieldCheck, Zap, Clock, Activity, Wallet, Loader2 } from 'lucide-react';
+import { ethers } from 'ethers';
+
+const API_BASE = "http://localhost:3001/api";
 
 export const EmployeeDashboard = () => {
-    const { balance, updateBalance } = useApp();
+    const { walletAddress, streams } = useApp();
+    const [liveBalance, setLiveBalance] = useState("0");
     const [progress, setProgress] = useState(0);
-    const [streaming] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Simulate streaming payments
+    const activeStream = streams.length > 0 ? streams[0] : null;
+
+    // Poll live balance from backend
+    const pollBalance = useCallback(async () => {
+        if (!activeStream || !walletAddress) return;
+        try {
+            const res = await fetch(
+                `${API_BASE}/streams/${activeStream.streamId}/balance/${walletAddress}`
+            );
+            if (res.ok) {
+                const data = await res.json();
+                setLiveBalance(data.formatted || ethers.formatEther(data.balance || "0"));
+            }
+        } catch (err) {
+            // Fallback: calculate client-side
+            if (activeStream) {
+                const now = Math.floor(Date.now() / 1000);
+                const elapsed = now - parseInt(activeStream.startTime);
+                if (elapsed > 0) {
+                    const bal = BigInt(elapsed) * BigInt(activeStream.ratePerSecond);
+                    setLiveBalance(ethers.formatEther(bal));
+                }
+            }
+        }
+    }, [activeStream, walletAddress]);
+
     useEffect(() => {
-        if (!streaming) return;
-        const interval = setInterval(() => {
-            updateBalance(0.0001);
-        }, 100);
+        pollBalance();
+        const interval = setInterval(pollBalance, 2000);
         return () => clearInterval(interval);
-    }, [streaming, updateBalance]);
+    }, [pollBalance]);
+
+    // Fetch roadmap progress
+    const fetchRoadmap = useCallback(async () => {
+        if (!activeStream) return;
+        try {
+            const res = await fetch(`${API_BASE}/streams/${activeStream.streamId}/roadmap`);
+            if (res.ok) {
+                const data = await res.json();
+                setProgress(Math.round(data.completionPercentage || 0));
+            }
+        } catch (err) {
+            console.error("Failed to fetch roadmap:", err);
+        }
+    }, [activeStream]);
+
+    useEffect(() => {
+        fetchRoadmap();
+    }, [fetchRoadmap]);
+
+    // Submit proof of work
+    const handleSubmitProof = async () => {
+        if (!activeStream || !walletAddress) return;
+        setIsSubmitting(true);
+        try {
+            const res = await fetch(`${API_BASE}/proof-of-work`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    streamId: activeStream.streamId,
+                    employeeAddress: walletAddress,
+                    title: "Work proof submitted",
+                    description: "Proof submitted from dashboard",
+                    proofUrl: "",
+                }),
+            });
+            if (res.ok) {
+                await fetchRoadmap();
+            }
+        } catch (err) {
+            console.error("Failed to submit proof:", err);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const formattedBalance = parseFloat(liveBalance).toFixed(4);
+    const streaming = !!activeStream;
 
     return (
         <div className="min-h-screen obsidian-bg p-8 pt-12 max-w-[1600px] mx-auto antialiased">
@@ -30,7 +104,12 @@ export const EmployeeDashboard = () => {
                 <div className="flex gap-4">
                     <div className="btn-obsidian py-2.5 px-5">
                         <Clock className="w-4 h-4 text-[#10b981]" />
-                        <span className="text-gray-300">4h 12m Active Session</span>
+                        <span className="text-gray-300">
+                            {activeStream 
+                                ? `Stream #${activeStream.streamId} Active`
+                                : "No Active Stream"
+                            }
+                        </span>
                     </div>
                 </div>
             </div>
@@ -46,14 +125,22 @@ export const EmployeeDashboard = () => {
                             <h2 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.4em] mb-6">Live Protocol Balance</h2>
                             <div className="flex items-baseline justify-center gap-4 mb-8">
                                 <span className="text-9xl font-extrabold text-premium-gradient tracking-tighter">
-                                    {balance.toFixed(4)}
+                                    {formattedBalance}
                                 </span>
-                                <span className="text-3xl font-bold text-gray-600 tracking-normal">ETH</span>
+                                <span className="text-3xl font-bold text-gray-600 tracking-normal">MON</span>
                             </div>
                             
-                            <div className="inline-flex items-center gap-3 px-6 py-2 rounded-full bg-emerald-500/5 border border-emerald-500/10">
-                                <Activity className="w-4 h-4 text-[#10b981]" />
-                                <span className="text-xs font-bold text-[#10b981] uppercase tracking-widest">Streaming Active</span>
+                            <div className={`inline-flex items-center gap-3 px-6 py-2 rounded-full ${
+                                streaming 
+                                    ? "bg-emerald-500/5 border border-emerald-500/10" 
+                                    : "bg-gray-500/5 border border-gray-500/10"
+                            }`}>
+                                <Activity className={`w-4 h-4 ${streaming ? "text-[#10b981]" : "text-gray-500"}`} />
+                                <span className={`text-xs font-bold uppercase tracking-widest ${
+                                    streaming ? "text-[#10b981]" : "text-gray-500"
+                                }`}>
+                                    {streaming ? "Streaming Active" : "No Active Stream"}
+                                </span>
                             </div>
                         </div>
 
@@ -72,7 +159,7 @@ export const EmployeeDashboard = () => {
                             <div className="flex-1 w-full max-w-xl">
                                 <div className="flex justify-between items-end mb-4">
                                     <span className="text-3xl font-extrabold text-premium-gradient tracking-tighter">{progress}%</span>
-                                    <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Node Capacity</span>
+                                    <span className="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Milestone Progress</span>
                                 </div>
                                 <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden border border-white/5">
                                     <div 
@@ -80,14 +167,6 @@ export const EmployeeDashboard = () => {
                                         style={{ width: `${progress}%` }}
                                     />
                                 </div>
-                                <input 
-                                    type="range" 
-                                    min="0" 
-                                    max="100" 
-                                    value={progress} 
-                                    onChange={(e) => setProgress(Number(e.target.value))}
-                                    className="w-full h-8 opacity-0 cursor-pointer absolute -translate-y-6"
-                                />
                             </div>
                         </div>
                     </div>
@@ -104,18 +183,28 @@ export const EmployeeDashboard = () => {
                         <div className="p-10 mt-auto">
                             <div className="premium-card p-6 bg-white/[0.02] space-y-4 mb-8">
                                 <div className="flex justify-between items-center text-xs">
-                                    <span className="text-gray-500 font-medium">Gas Efficiency</span>
-                                    <span className="text-emerald-500 font-bold uppercase tracking-widest">Optimal</span>
+                                    <span className="text-gray-500 font-medium">Network</span>
+                                    <span className="text-emerald-500 font-bold uppercase tracking-widest">Monad Testnet</span>
                                 </div>
                                 <div className="flex justify-between items-center text-xs">
-                                    <span className="text-gray-500 font-medium">L2 Finality</span>
-                                    <span className="text-gray-400 font-bold uppercase tracking-widest">12s</span>
+                                    <span className="text-gray-500 font-medium">Stream Rate</span>
+                                    <span className="text-gray-400 font-bold uppercase tracking-widest">
+                                        {activeStream ? `${activeStream.ratePerSecond} wei/s` : "N/A"}
+                                    </span>
                                 </div>
                             </div>
 
-                            <button className="btn-jade w-full group shadow-md">
-                                <ShieldCheck className="w-5 h-5" />
-                                <span>Commit Mission</span>
+                            <button 
+                                className="btn-jade w-full group shadow-md disabled:opacity-50"
+                                onClick={handleSubmitProof}
+                                disabled={isSubmitting || !activeStream}
+                            >
+                                {isSubmitting ? (
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                ) : (
+                                    <ShieldCheck className="w-5 h-5" />
+                                )}
+                                <span>{isSubmitting ? "Submitting..." : "Commit Mission"}</span>
                             </button>
                             <div className="flex items-center justify-center gap-2 mt-4 text-[10px] text-gray-600 font-bold uppercase tracking-widest opacity-60">
                                 <Wallet className="w-3 h-3" /> Secure Signature Required
