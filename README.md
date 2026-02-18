@@ -4,6 +4,11 @@ A **Web3 music streaming platform** built on Monad Testnet that pays artists in 
 
 ---
 
+## Demo
+
+![HyperStream-music](demo.webp)
+
+---
 ## How It Works
 
 1. **Connect** your wallet (MetaMask, Rabby, etc.)
