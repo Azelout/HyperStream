@@ -1,0 +1,179 @@
+@import "tailwindcss";
+
+/* ── Monad Neon Design System ─────────────────────────────── */
+:root {
+  --monad-purple: #836EF9;
+  --monad-purple-light: #A78BFA;
+  --monad-purple-dark: #6D28D9;
+  --neon-green: #00FF88;
+  --neon-green-dim: #00CC6A;
+  --neon-pink: #F43F5E;
+  --bg-primary: #08080D;
+  --bg-secondary: #0F0F18;
+  --bg-card: #141420;
+  --bg-card-hover: #1A1A2E;
+  --border-subtle: rgba(131, 110, 249, 0.15);
+  --text-primary: #F5F5F7;
+  --text-secondary: #9CA3AF;
+  --text-muted: #6B7280;
+}
+
+/* ── Base ─────────────────────────────────────────────────── */
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Scrollbar ────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--monad-purple-dark);
+  border-radius: 3px;
+}
+
+/* ── Glassmorphism ────────────────────────────────────────── */
+.glass {
+  background: rgba(20, 20, 32, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+}
+
+.glass-strong {
+  background: rgba(20, 20, 32, 0.95);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid var(--border-subtle);
+}
+
+/* ── Glow Effects ─────────────────────────────────────────── */
+.glow-purple {
+  box-shadow:
+    0 0 20px rgba(131, 110, 249, 0.3),
+    0 0 60px rgba(131, 110, 249, 0.1);
+}
+
+.glow-green {
+  box-shadow:
+    0 0 20px rgba(0, 255, 136, 0.3),
+    0 0 60px rgba(0, 255, 136, 0.1);
+}
+
+.text-glow-purple {
+  text-shadow: 0 0 20px rgba(131, 110, 249, 0.5);
+}
+
+.text-glow-green {
+  text-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+}
+
+/* ── Animations ───────────────────────────────────────────── */
+@keyframes pulse-neon {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes cost-tick {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-pulse-neon {
+  animation: pulse-neon 2s ease-in-out infinite;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s ease-out forwards;
+}
+
+.animate-cost-tick {
+  animation: cost-tick 0.3s ease-out;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* ── Track Row Hover ──────────────────────────────────────── */
+.track-row {
+  transition: all 0.2s ease;
+}
+.track-row:hover {
+  background: var(--bg-card-hover);
+  transform: translateX(4px);
+}
+
+/* ── Cost Counter ─────────────────────────────────────────── */
+.cost-counter {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+  letter-spacing: 0.05em;
+}
+
+/* ── Progress Bar ─────────────────────────────────────────── */
+.progress-bar {
+  position: relative;
+  overflow: hidden;
+}
+.progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(131, 110, 249, 0.3),
+    transparent
+  );
+  animation: gradient-shift 2s ease infinite;
+}
+
+/* ── RainbowKit Overrides ─────────────────────────────────── */
+[data-rk] {
+  --rk-colors-accentColor: var(--monad-purple) !important;
+  --rk-colors-connectButtonBackground: var(--bg-card) !important;
+  --rk-colors-connectButtonText: var(--text-primary) !important;
+}

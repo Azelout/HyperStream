@@ -29,7 +29,7 @@ IERC20(tokenAddress).approve(STREAM_MANAGER, depositAmount);
 
 // Step 2: Create a 30-day stream
 uint256 streamId = streamManager.createStream(
-    recipient,           // who receives the funds
+    recipient,           // who receives the funds  
     depositAmount,       // total tokens to stream (must be divisible by duration)
     tokenAddress,        // ERC-20 token address
     block.timestamp + 60,// start time (must be in the future)
