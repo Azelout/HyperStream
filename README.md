@@ -6,7 +6,7 @@ A **Web3 music streaming platform** built on Monad Testnet that pays artists in 
 
 ## Demo
 
-![HyperStream-music](https://github.com/Azelout/HyperStream/blob/hyperstream-music/demo.webp)
+![HyperStream-music](https://github.com/Azelout/HyperStream/blob/hyperstream-music/demo.mp4)
 
 ---
 ## How It Works
